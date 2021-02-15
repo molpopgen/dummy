@@ -1,3 +1,5 @@
 numpy==1.19.5
 msprime
 tskit==0.3.4
+pytest
+pytest-xdist
