@@ -1,0 +1,53 @@
+name: UbuntuStressTest
+
+on:
+  pull_request:
+  push:
+    branches: [main, dev]
+
+jobs:
+  test:
+    name: Ubuntu
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python: [ 3.8 ]
+        os:  [ ubuntu-20.04 ]
+        compiler: [gcc, clang10]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Edit PATH
+        run: |
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Python version
+        run: |
+          python --version
+
+      - name: Install pip dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+            # These are needed to install black:
+            python -m pip install --upgrade setuptools wheel
+            python -m pip install -r requirements.txt
+            # For sdist validation
+            python -m pip install --upgrade twine
+
+      - name: Numpy???
+        run: |
+            python -c "import numpy;print(numpy.__version__)"
+
+      - name: Run dummy test
+        run: |
+            python -m pytest tests/test_import_msp.py
